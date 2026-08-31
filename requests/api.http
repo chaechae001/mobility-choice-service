@@ -63,3 +63,22 @@ Authorization: Bearer {{token}}
 DELETE http://localhost:4000/api/posts/{{postId}}
 Authorization: Bearer {{token}}
 
+###
+
+### 모빌리티 선택 계획 작성
+POST http://localhost:4000/api/plans
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "서울 출퇴근용 첫 차 선택 계획",
+  "purpose": "평일 출퇴근과 주말 근거리 이동",
+  "budget": 3000,
+  "passengers": 1,
+  "drivingPattern": "평일 왕복 30km, 월 1회 장거리 이동",
+  "parkingEnvironment": "아파트 지하주차장",
+  "chargingEnvironment": "상시 충전 어려움",
+  "preferredUsageType": "신차 또는 인증중고차",
+  "priorities": ["연비", "주차 편의성", "안전성"],
+  "notes": "하이브리드 차량을 우선 고려합니다."
+}

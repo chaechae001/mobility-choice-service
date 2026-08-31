@@ -111,4 +111,8 @@ const mobilityPlanSchema = new mongoose.Schema(
 );
 
 // 4. mongoose.model()은 Schema를 실제로 MongoDB에 저장·조회할 수 있는 "모델"로 바꿈
-module.exports = mongoose.model("MobilityPlan", mobilityPlanSchema);
+module.exports = mongoose.model(
+    "MobilityPlan",
+    mobilityPlanSchema,
+    "plans",
+);
