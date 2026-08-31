@@ -86,3 +86,13 @@ Authorization: Bearer {{token}}
 ### 내 모빌리티 선택 계획 목록 조회
 GET http://localhost:4000/api/plans
 Authorization: Bearer {{token}}
+
+> {%
+    if (response.status === 200 && response.body.length > 0) {
+        client.global.set("planId", response.body[0]._id);
+    }
+%}
+
+### 모빌리티 선택 계획 상세 조회
+GET http://localhost:4000/api/plans/{{planId}}
+Authorization: Bearer {{token}}

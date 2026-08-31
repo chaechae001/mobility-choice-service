@@ -88,7 +88,59 @@ app.get("/api/plans", requireAuth, async (req, res) => {
     }
 });
 
+// ==================================================
+// 모빌리티 선택 계획 상세 조회 API
+// GET /api/plans/:id
+//
+// :id 자리에 MongoDB 선택 계획 ID가 들어갑니다.
+// 예: /api/plans/6a951787f297206dbe235e6a
+// ==================================================
+app.get("/api/plans/:id", requireAuth, async (req, res) => {
+    try {
+        // req.params는 URL 경로의 :id 값을 담은 객체입니다.
+        // const id = req.params.id;와 같은 뜻입니다.
+        const { id } = req.params;
 
+        // MongoDB ObjectId 형식인지 먼저 확인합니다.
+        // 잘못된 문자열로 DB를 조회하는 것을 막습니다.
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                msg: "올바르지 않은 선택 계획 ID입니다.",
+            });
+        }
+
+        // findById()는 _id가 id와 같은 계획 한 개를 찾습니다.
+        const plan = await MobilityPlan.findById(id);
+
+        // 해당 _id의 계획이 MongoDB에 없을 때입니다.
+        if (!plan) {
+            return res.status(404).json({
+                msg: "선택 계획을 찾을 수 없습니다.",
+            });
+        }
+
+        // 상세 조회하려는 계획의 소유자와
+        // 현재 JWT로 로그인한 사용자가 같은지 확인합니다.
+        if (plan.ownerId.toString() !== String(req.user.userId)) {
+            return res.status(403).json({
+                msg: "본인의 선택 계획만 조회할 수 있습니다.",
+            });
+        }
+
+        // 상세 페이지를 열 때마다 조회수를 1 증가시킵니다.
+        plan.views += 1;
+
+        // 변경된 views 값을 MongoDB에 저장합니다.
+        await plan.save();
+
+        // 계획 한 개는 객체 {} 형태로 반환합니다.
+        return res.status(200).json(plan);
+    } catch (error) {
+        return res.status(500).json({
+            msg: "선택 계획을 불러오지 못했습니다.",
+        });
+    }
+});
 
 // ==================================================
 // 모빌리티 선택 계획 작성
