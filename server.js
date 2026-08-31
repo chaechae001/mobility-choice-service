@@ -143,6 +143,168 @@ app.get("/api/plans/:id", requireAuth, async (req, res) => {
 });
 
 // ==================================================
+// 모빌리티 선택 계획 수정 API
+// PATCH /api/plans/:id
+//
+// 사용자가 전달한 항목만 수정합니다.
+// ==================================================
+app.patch("/api/plans/:id", requireAuth, async (req, res) => {
+    try {
+        // URL의 :id 값을 가져옵니다.
+        const { id } = req.params;
+
+        // MongoDB ID 형식인지 확인합니다.
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                msg: "올바르지 않은 선택 계획 ID입니다.",
+            });
+        }
+
+        // 수정할 선택 계획 한 개를 찾습니다.
+        const plan = await MobilityPlan.findById(id);
+
+        if (!plan) {
+            return res.status(404).json({
+                msg: "선택 계획을 찾을 수 없습니다.",
+            });
+        }
+
+        // JWT의 로그인 사용자와 계획의 소유자가 같은지 확인합니다.
+        if (plan.ownerId.toString() !== String(req.user.userId)) {
+            return res.status(403).json({
+                msg: "본인의 선택 계획만 수정할 수 있습니다.",
+            });
+        }
+
+        // 사용자가 수정할 수 있는 필드 목록입니다.
+        // 배열 []인 이유는 여러 필드명을 순서대로 관리하기 위해서입니다.
+        const allowedFields = [
+            "title",
+            "purpose",
+            "budget",
+            "passengers",
+            "drivingPattern",
+            "parkingEnvironment",
+            "chargingEnvironment",
+            "preferredUsageType",
+            "priorities",
+            "notes",
+        ];
+
+        // 실제 수정할 데이터만 담을 빈 객체입니다.
+        const updates = {};
+
+        // 허용된 필드만 req.body에서 꺼내 updates에 담습니다.
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                updates[field] = req.body[field];
+            }
+        }
+
+        // 수정할 값이 하나도 없으면 요청을 거절합니다.
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({
+                msg: "수정할 선택 계획 정보를 입력해주세요.",
+            });
+        }
+
+        // 수정 요청에 title이 포함됐다면 빈 제목은 허용하지 않습니다.
+        if (updates.title !== undefined && !updates.title?.trim()) {
+            return res.status(400).json({
+                msg: "선택 계획 제목은 비워둘 수 없습니다.",
+            });
+        }
+
+        // 수정 요청에 purpose가 포함됐다면 빈 값은 허용하지 않습니다.
+        if (updates.purpose !== undefined && !updates.purpose?.trim()) {
+            return res.status(400).json({
+                msg: "차량 이용 목적은 비워둘 수 없습니다.",
+            });
+        }
+
+        // 수정 요청에 budget이 포함됐다면 숫자·0 이상인지 확인합니다.
+        if (
+            updates.budget !== undefined &&
+            (typeof updates.budget !== "number" || updates.budget < 0)
+        ) {
+            return res.status(400).json({
+                msg: "예산은 0 이상의 숫자로 입력해주세요.",
+            });
+        }
+
+        // priorities가 포함됐다면 배열인지 확인합니다.
+        if (
+            updates.priorities !== undefined &&
+            !Array.isArray(updates.priorities)
+        ) {
+            return res.status(400).json({
+                msg: "중요 조건은 배열 형태로 입력해주세요.",
+            });
+        }
+
+        // 기존 plan 객체에 허용된 수정값만 덮어씁니다.
+        Object.assign(plan, updates);
+
+        // MongoDB에 저장합니다.
+        // timestamps: true 때문에 updatedAt도 자동 변경됩니다.
+        await plan.save();
+
+        return res.status(200).json(plan);
+    } catch (error) {
+        return res.status(500).json({
+            msg: "선택 계획을 수정하지 못했습니다.",
+        });
+    }
+});
+
+// ==================================================
+// 모빌리티 선택 계획 삭제 API
+// DELETE /api/plans/:id
+//
+// 로그인한 사용자 본인이 만든 계획만 삭제할 수 있습니다.
+// ==================================================
+app.delete("/api/plans/:id", requireAuth, async (req, res) => {
+    try {
+        // URL의 :id 값을 가져옵니다.
+        const { id } = req.params;
+
+        // MongoDB ObjectId 형식인지 확인합니다.
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                msg: "올바르지 않은 선택 계획 ID입니다.",
+            });
+        }
+
+        // 삭제할 선택 계획 한 개를 찾습니다.
+        const plan = await MobilityPlan.findById(id);
+
+        if (!plan) {
+            return res.status(404).json({
+                msg: "선택 계획을 찾을 수 없습니다.",
+            });
+        }
+
+        // 로그인한 사용자와 계획 소유자가 같은지 확인합니다.
+        if (plan.ownerId.toString() !== String(req.user.userId)) {
+            return res.status(403).json({
+                msg: "본인의 선택 계획만 삭제할 수 있습니다.",
+            });
+        }
+
+        // 현재 plan 문서 하나를 MongoDB에서 삭제합니다.
+        await plan.deleteOne();
+
+        return res.status(200).json({
+            msg: "선택 계획이 삭제되었습니다.",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            msg: "선택 계획을 삭제하지 못했습니다.",
+        });
+    }
+});
+
+// ==================================================
 // 모빌리티 선택 계획 작성
 // JWT 토큰이 있는 로그인 사용자만 작성할 수 있습니다.
 // 로그인한 사용자가 자신의 차량 선택 조건을 저장합니다.
