@@ -4,6 +4,7 @@
 // → 이 파일은 브라우저에서 실행되는 React 컴포넌트라는 Next.js 문법입니다.
 // → 입력값, 클릭, localStorage를 사용하므로 필요합니다.
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -105,6 +106,9 @@ export default function Home() {
 
           <button type="submit">로그인</button>
         </form>
+          <p>
+              계정이 없으신가요? <Link href="/register">회원가입</Link>
+          </p>
 
         <p>{message}</p>
       </main>
