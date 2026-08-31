@@ -18,13 +18,8 @@ const app = express();
 
 const PORT = process.env.PORT || 4000;
 
-// React 개발 서버(5173번 포트)가 이 API를 호출하도록 허용
-app.use(
-    cors({
-        origin: "http://localhost:5173",
-    }),
-);
-
+// 이 설정이 있어야 localhost:3000의 Next.js가 localhost:4000의 Express API를 호출할 수 있음
+app.use(cors());
 // JSON 형식으로 보낸 데이터를 req.body에서 읽도록 함
 app.use(express.json());
 

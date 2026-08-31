@@ -33,7 +33,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "title": "서울 출퇴근용 첫 차 선택 계획",
+  "title": "경기도 출퇴근용 첫 차 선택 계획",
   "purpose": "평일 출퇴근과 주말 근거리 이동",
   "budget": 3000,
   "passengers": 1,
