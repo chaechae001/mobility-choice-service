@@ -54,6 +54,40 @@ app.get("/api/plans", requireAuth, async (req, res) => {
     }
 });
 
+// ==================================================
+// 모빌리티 선택 계획 목록 조회 API
+// GET /api/plans
+//
+// 로그인한 사용자가 직접 만든 선택 계획만 조회합니다.
+// ==================================================
+app.get("/api/plans", requireAuth, async (req, res) => {
+    try {
+        // req.user는 requireAuth가 JWT를 검증한 뒤 넣어준 로그인 정보입니다.
+        const loginUserId = req.user.userId;
+
+        // find() 안의 {}는 MongoDB 검색 조건을 적는 객체입니다.
+        //
+        // ownerId가 현재 로그인한 사용자의 ID와 같은 계획만 찾습니다.
+        // 따라서 다른 사용자의 선택 계획은 목록에 보이지 않습니다.
+        const plans = await MobilityPlan.find({
+            ownerId: loginUserId,
+        })
+
+            // sort()는 조회 결과의 순서를 정합니다.
+            // createdAt: -1은 최신 작성 계획부터 보여준다는 뜻입니다.
+            .sort({
+                createdAt: -1,
+            });
+
+        // plans는 여러 계획을 담은 배열 [] 형태로 응답됩니다.
+        return res.status(200).json(plans);
+    } catch (error) {
+        return res.status(500).json({
+            msg: "선택 계획 목록을 불러오지 못했습니다.",
+        });
+    }
+});
+
 
 
 // ==================================================
