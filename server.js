@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+require("dotenv").config();
 
 const Post = require("./models/Post");
 const User = require("./models/User");
@@ -15,7 +16,7 @@ const requireAuth = require("./middlewares/requireAuth");
 
 const app = express();
 
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
 // React 개발 서버(5173번 포트)가 이 API를 호출하도록 허용
 app.use(
@@ -214,12 +215,12 @@ app.delete("/api/posts/:id", requireAuth, async (req, res)=>{
 
 async function startServer(){
     try{
-        await mongoose.connect("mongodb://127.0.0.1:27017/my_board_db");
-
+        // await mongoose.connect("mongodb://127.0.0.1:27017/my_board_db");
+        await mongoose.connect(process.env.MONGODB_URI);
         console.log("MongoDB 연결 성공");
 
-        app.listen(4000, ()=>{
-            console.log("Server is running on port 4000");
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
         });
     } catch (error) {
         console.error("MongoDB 연결 실패:", error.message);
@@ -269,7 +270,7 @@ app.post("/api/auth/register", async (req, res)=>{
             user: {
                 id: newUser._id,
                 userId: newUser.userId,
-                createdAg: newUser.createdAt,
+                createdAt: newUser.createdAt,
             },
         });
     } catch (error) {

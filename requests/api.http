@@ -1,2 +1,38 @@
 ### 서버 상태 확인
 GET http://localhost:4000/api/health
+
+### 회원 가입
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "userId": "chaeeun_01",
+  "password": "testpass123"
+}
+
+### 로그인
+POST localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "userId": "chaeeun_01",
+  "password": "testpass123"
+}
+
+> {%
+    client.global.set("token", response.body.token);
+%}
+
+### 로그인 사용자 확인
+GET http://localhost:4000/api/auth/me
+Authorization: Bearer {{token}}
+
+### 게시글 작성
+POST http://localhost:4000/api/posts
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "서울 출퇴근용 첫 차 선택 계획",
+  "content": "평일 왕복 30km 출퇴근과 주말 근거리 이동에 적합한 차량을 찾고 있습니다."
+}
