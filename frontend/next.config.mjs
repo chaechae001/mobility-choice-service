@@ -1,6 +1,20 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+    images: {
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "www.kia.com",
+            },
+            {
+                protocol: "https",
+                hostname: "toyota.co.kr",
+            },
+            {
+                protocol: "https",
+                hostname: "wizz.volvocars.com",
+            },
+        ],
+    },
 };
 
 export default nextConfig;
