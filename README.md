@@ -11,7 +11,7 @@
   <img
     src="./docs/images/01-login.png"
     alt="Mobility Choice 로그인 화면"
-    width="60%"
+    width="80%"
   />
 </p>
 </div>
@@ -79,7 +79,7 @@ flowchart LR
   <img
     src="./docs/images/02-explore.png"
     alt="Mobility Choice 맞춤 조건 선택 화면"
-    width="60%"
+    width="80%"
   />
 </p>
 
@@ -92,7 +92,7 @@ flowchart LR
   <img
     src="./docs/images/03-vehicles.png"
     alt="Mobility Choice 차량 추천 목록 화면"
-    width="60%"
+    width="80%"
   />
 </p>
 
@@ -115,7 +115,7 @@ flowchart LR
   <img
     src="./docs/images/04-vehicle-detail.png"
     alt="Mobility Choice 차량 상세 화면"
-    width="60%"
+    width="80%"
   />
 </p>
 
@@ -128,7 +128,7 @@ flowchart LR
   <img
     src="./docs/images/05-comparison.png"
     alt="Mobility Choice 차량 비교 화면"
-    width="60%"
+    width="80%"
   />
 </p>
 
