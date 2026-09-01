@@ -1,0 +1,77 @@
+:root {
+    color-scheme: dark;
+
+    --background: #07090d;
+    --surface: #0d1016;
+    --surface-light: #151a23;
+    --surface-hover: #1b2230;
+
+    --text-primary: #f7f8fa;
+    --text-secondary: #a8b1c0;
+    --text-muted: #727e91;
+
+    --accent: #6e87ff;
+    --accent-hover: #89a0ff;
+    --danger: #ff777d;
+
+    --border: rgba(255, 255, 255, 0.11);
+    --border-strong: rgba(255, 255, 255, 0.2);
+
+    /*
+     * 기존 CSS와의 호환용 변수입니다.
+     * 다른 페이지의 이전 스타일이 바로 깨지지 않도록 유지합니다.
+     */
+    --line: var(--border);
+    --ink: #0b0e14;
+    --muted: var(--text-secondary);
+    --blue: var(--accent);
+
+    --font-sans: var(--font-geist-sans), Pretendard,
+    "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--background);
+}
+
+body {
+    margin: 0;
+    background: var(--background);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    color: inherit;
+}
+
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Chrome 자동완성 시에도 입력 글자가 밝게 보이도록 고정합니다. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #f7f8fa;
+    -webkit-box-shadow: 0 0 0 1000px #151a23 inset;
+    caret-color: #f7f8fa;
+}

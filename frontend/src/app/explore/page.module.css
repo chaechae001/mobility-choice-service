@@ -1,0 +1,146 @@
+.page {
+    min-height: 100vh;
+    padding: 0 6vw 140px;
+    color: #f5f7fa;
+    background:
+            radial-gradient(circle at 80% 5%, rgba(68, 95, 145, 0.2), transparent 30%),
+            #080a0e;
+}
+
+.header {
+    height: 88px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.logo,
+.resetButton {
+    border: 0;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+}
+
+.logo {
+    padding: 0;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.resetButton {
+    padding: 10px 0;
+    color: #aeb5c2;
+    font-size: 14px;
+}
+
+.hero {
+    padding: 96px 0 72px;
+}
+
+.eyebrow {
+    margin: 0 0 20px;
+    color: #829fff;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+}
+
+.hero h1 {
+    width: max-content;
+    max-width: none;
+    margin: 0;
+    white-space: nowrap;
+    font-size: clamp(16px, 4.25vw, 76px);
+    line-height: 1.08;
+    letter-spacing: -0.085em;
+}
+
+.hero > p:last-child {
+    width: max-content;
+    max-width: none;
+    margin: 28px 0 0;
+    white-space: nowrap;
+    color: #aeb5c2;
+    font-size: clamp(11px, 1.3vw, 18px);
+    line-height: 1.7;
+}
+
+.filterArea {
+    display: grid;
+    gap: 18px;
+}
+
+.bottomBar {
+    position: fixed;
+    right: 6vw;
+    bottom: 24px;
+    left: 6vw;
+    z-index: 20;
+    min-height: 82px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 14px 24px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 18px;
+    background: rgba(16, 19, 25, 0.9);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(18px);
+}
+
+.bottomBar > div {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.bottomBar > div span {
+    color: #929aa8;
+    font-size: 14px;
+}
+
+.bottomBar > div strong {
+    color: #ffffff;
+    font-size: 17px;
+}
+
+.bottomBar > button {
+    min-height: 54px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    border: 0;
+    border-radius: 11px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #5876e4, #7694ff);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+@media (max-width: 800px) {
+    .page {
+        padding-right: 20px;
+        padding-left: 20px;
+        overflow-x: auto;
+    }
+
+    .hero {
+        padding: 64px 0 48px;
+    }
+
+    .bottomBar {
+        right: 16px;
+        bottom: 16px;
+        left: 16px;
+    }
+
+    .bottomBar > button {
+        gap: 18px;
+    }
+}

@@ -1,0 +1,382 @@
+.page {
+    min-height: 100vh;
+    padding: 30px 48px 64px;
+    color: #f7f8fa;
+    background:
+            radial-gradient(circle at 72% 0%, rgba(65, 91, 176, 0.14), transparent 28%),
+            #07090d;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.logo {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+}
+
+.listButton,
+.backButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 10px;
+    color: #ffffff !important;
+    background: #171c27 !important;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 160ms ease;
+}
+
+.listButton:hover,
+.backButton:hover {
+    border-color: #809aff;
+    background: #263252 !important;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+    gap: 70px;
+    align-items: center;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 88px 0 58px;
+}
+
+.heroInfo {
+    min-width: 0;
+}
+
+.brand,
+.cardLabel,
+.stateLabel {
+    margin: 0 0 16px;
+    color: #7d99ff;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.hero h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(42px, 5.2vw, 78px);
+    font-weight: 750;
+    line-height: 1.02;
+    letter-spacing: -0.07em;
+}
+
+.price {
+    margin: 32px 0 8px;
+    color: #ffffff;
+    font-size: clamp(23px, 2.2vw, 34px);
+    font-weight: 750;
+    letter-spacing: -0.04em;
+}
+
+.priceNote {
+    margin: 0;
+    color: #a8b2c4;
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 28px;
+}
+
+.tags span {
+    padding: 9px 12px;
+    border: 1px solid rgba(137, 161, 231, 0.3);
+    border-radius: 999px;
+    color: #cbd7ff;
+    background: rgba(85, 111, 190, 0.1);
+    font-size: 13px;
+}
+
+.vehicleVisual {
+    position: relative;
+    display: grid;
+    min-height: 400px;
+    overflow: hidden;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 28px;
+    background:
+            radial-gradient(circle at 50% 15%, rgba(103, 134, 242, 0.16), transparent 48%),
+            linear-gradient(145deg, #191e2a, #0e1118);
+}
+
+.vehicleVisual::after {
+    position: absolute;
+    right: -10%;
+    bottom: -46%;
+    left: -10%;
+    height: 50%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(110, 135, 220, 0.2), transparent 68%);
+    content: "";
+}
+
+.vehicleImage {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 400px;
+    padding: 26px 34px 18px;
+    object-fit: contain;
+    object-position: center 56%;
+    filter: drop-shadow(0 24px 20px rgba(0, 0, 0, 0.4));
+}
+
+.imageFallback {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 400px;
+    padding: 40px;
+    text-align: center;
+}
+
+.imageFallback span {
+    display: block;
+    margin-bottom: 10px;
+    color: #8ca8ff;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+}
+
+.imageFallback strong {
+    display: block;
+    color: #f7f8fa;
+    font-size: clamp(28px, 3vw, 48px);
+    letter-spacing: -0.06em;
+}
+
+.imageFallback p {
+    margin: 16px 0 0;
+    color: #9da8ba;
+    font-size: 14px;
+}
+
+.contentGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+.infoCard,
+.descriptionCard {
+    padding: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 20px;
+    background: linear-gradient(145deg, rgba(29, 33, 42, 0.94), rgba(16, 19, 26, 0.94));
+}
+
+.infoCard h2,
+.descriptionCard h2 {
+    margin: 0 0 24px;
+    color: #ffffff;
+    font-size: 26px;
+    letter-spacing: -0.05em;
+}
+
+.specTable {
+    margin: 0;
+}
+
+.specTable div {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 16px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.specTable dt {
+    color: #aab4c6;
+    font-size: 14px;
+}
+
+.specTable dd {
+    margin: 0;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.featureList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.featureList span {
+    padding: 10px 13px;
+    border: 1px solid rgba(127, 151, 231, 0.26);
+    border-radius: 10px;
+    color: #d9e2ff;
+    background: rgba(86, 109, 180, 0.13);
+    font-size: 14px;
+}
+
+.featureNote,
+.emptyText {
+    margin: 20px 0 0;
+    color: #aab4c6;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.descriptionCard {
+    grid-column: 1 / -1;
+}
+
+.description {
+    margin: 0;
+    color: #d4dae6;
+    font-size: 16px;
+    line-height: 1.85;
+}
+
+.sourceSection {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sourceSection p {
+    margin: 0 0 7px;
+    color: #aab4c6;
+    font-size: 14px;
+}
+
+.sourceSection span {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.sourceSection a {
+    color: #91a9ff;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.sourceSection a:hover {
+    color: #c8d4ff;
+}
+
+.statePage {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    padding: 28px;
+    color: #ffffff;
+    background: #07090d;
+    text-align: center;
+}
+
+.statePage h1 {
+    margin: 0 0 14px;
+    font-size: clamp(32px, 4vw, 52px);
+    letter-spacing: -0.06em;
+}
+
+.statePage p {
+    margin: 0 0 28px;
+    color: #aab4c6;
+}
+
+.loader {
+    width: 34px;
+    height: 34px;
+    margin: 0 auto 20px;
+    border: 3px solid rgba(255, 255, 255, 0.16);
+    border-top-color: #7d99ff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 900px) {
+    .page {
+        padding: 22px 22px 48px;
+    }
+
+    .hero {
+        grid-template-columns: 1fr;
+        gap: 36px;
+        padding: 58px 0 38px;
+    }
+
+    .vehicleVisual {
+        min-height: 300px;
+    }
+
+    .vehicleImage,
+    .imageFallback {
+        min-height: 300px;
+        height: 300px;
+    }
+
+    .contentGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .descriptionCard {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 520px) {
+    .header {
+        gap: 16px;
+    }
+
+    .logo {
+        font-size: 12px;
+    }
+
+    .listButton {
+        min-height: 38px;
+        padding: 0 11px;
+        font-size: 12px;
+    }
+
+    .infoCard,
+    .descriptionCard {
+        padding: 22px;
+    }
+}

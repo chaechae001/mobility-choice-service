@@ -1,0 +1,387 @@
+.page {
+    min-height: 100vh;
+    padding: 0 6vw 150px;
+    color: #f7f8fa;
+    background:
+            radial-gradient(circle at 12% 10%, rgba(73, 94, 148, 0.2), transparent 30%),
+            #080a0e;
+}
+
+.header {
+    height: 88px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.logo,
+.changeButton {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.logo {
+    padding: 0;
+    color: #ffffff;
+    background: transparent;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.changeButton {
+    min-height: 42px;
+    padding: 0 17px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 9px;
+    color: #e7eaf0;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 15px;
+    font-weight: 750;
+}
+
+.hero {
+    padding: 90px 0 38px;
+}
+
+.hero > p {
+    margin: 0 0 18px;
+    color: #829fff;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+}
+
+.hero h1 {
+    width: max-content;
+    max-width: none;
+    margin: 0;
+    white-space: nowrap;
+    font-size: clamp(16px, 4.25vw, 74px);
+    line-height: 1.08;
+    letter-spacing: -0.085em;
+}
+
+.resultSummary {
+    margin-top: 30px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    color: #a9b0bc;
+}
+
+.resultSummary strong {
+    color: #ffffff;
+    font-size: 26px;
+}
+
+.conditionSummary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.conditionSummaryText {
+    min-width: 0;
+}
+
+.conditionSummaryText > p {
+    margin: 0 0 10px;
+    color: #8490a4;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+.conditionChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.conditionChips span {
+    padding: 7px 10px;
+    border: 1px solid rgba(115, 145, 242, 0.35);
+    border-radius: 999px;
+    color: #d5defc;
+    background: rgba(67, 92, 179, 0.16);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.conditionChips .emptyChip {
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #98a1b0;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.inlineEditButton {
+    flex-shrink: 0;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 9px;
+    color: #ffffff;
+    background: #1b2230;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.filterPanel {
+    margin: 18px 0 34px;
+    padding: 30px;
+    border: 1px solid rgba(119, 148, 255, 0.28);
+    border-radius: 22px;
+    background:
+            radial-gradient(circle at right top, rgba(87, 119, 223, 0.18), transparent 35%),
+            rgba(17, 21, 30, 0.96);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+}
+
+.filterPanelHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 26px;
+}
+
+.filterPanelHeader p {
+    margin: 0 0 8px;
+    color: #819dff;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.filterPanelHeader h2 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: -0.045em;
+}
+
+.filterPanelHeader > button {
+    min-height: 38px;
+    padding: 0 12px;
+    border: 0;
+    color: #aeb8ce;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.filterEditorBlocks {
+    display: grid;
+    gap: 18px;
+}
+
+.notice {
+    margin: 0 0 24px;
+    padding: 18px 20px;
+    border: 1px solid rgba(244, 194, 83, 0.25);
+    border-radius: 12px;
+    color: #e9d49e;
+    background: rgba(244, 194, 83, 0.06);
+    font-size: 14px;
+}
+
+.compareBar {
+    position: fixed;
+    right: 6vw;
+    bottom: 24px;
+    left: 6vw;
+    z-index: 20;
+    min-height: 78px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 12px 22px;
+    border: 1px solid rgba(130, 157, 255, 0.36);
+    border-radius: 17px;
+    background: rgba(16, 19, 25, 0.93);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(18px);
+}
+
+.compareBar > div {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.compareBar span {
+    color: #aab3c1;
+    font-size: 14px;
+}
+
+.compareBar strong {
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.compareBar button {
+    min-height: 52px;
+    padding: 0 21px;
+    display: flex;
+    align-items: center;
+    gap: 34px;
+    border: 0;
+    border-radius: 11px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #5876e4, #7694ff);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.compareMessage {
+    position: fixed;
+    right: 6vw;
+    bottom: 115px;
+    z-index: 25;
+    margin: 0;
+    padding: 11px 14px;
+    border: 1px solid rgba(237, 195, 96, 0.35);
+    border-radius: 10px;
+    color: #f2d99b;
+    background: rgba(34, 29, 20, 0.94);
+    font-size: 13px;
+}
+
+.emptyResult {
+    padding: 64px 24px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    color: #aeb5c2;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.emptyResult p {
+    margin: 0;
+}
+
+.emptyResult button {
+    min-height: 46px;
+    margin-top: 22px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 9px;
+    color: #ffffff;
+    background: #5775df;
+    font-family: inherit;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.statePage {
+    min-height: 100vh;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    text-align: center;
+    background: #080a0e;
+}
+
+.statePage > p {
+    color: #9ca4b2;
+}
+
+.stateLabel {
+    color: #819cf5 !important;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+}
+
+.statePage h1 {
+    margin: 10px 0;
+    font-size: 34px;
+}
+
+.loader {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    border-top-color: #7794ff;
+    border-radius: 50%;
+    animation: rotate 700ms linear infinite;
+}
+
+.stateActions {
+    margin-top: 24px;
+    display: flex;
+    gap: 10px;
+}
+
+.stateActions button {
+    min-height: 46px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 9px;
+    color: #ffffff;
+    background: #5775df;
+    font-family: inherit;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+@keyframes rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 850px) {
+    .page {
+        padding-right: 20px;
+        padding-left: 20px;
+        overflow-x: auto;
+    }
+
+    .hero {
+        padding-top: 64px;
+    }
+
+    .conditionSummary,
+    .filterPanelHeader {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .filterPanel {
+        padding: 22px 16px;
+    }
+
+    .compareBar {
+        right: 16px;
+        bottom: 16px;
+        left: 16px;
+    }
+
+    .compareBar button {
+        gap: 14px;
+        padding: 0 16px;
+    }
+
+    .compareMessage {
+        right: 16px;
+        bottom: 108px;
+        left: 16px;
+    }
+}

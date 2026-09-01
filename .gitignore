@@ -1,6 +1,33 @@
-node_modules/
-backend/.env
-.env.local
-.idea/
+# Dependencies
+**/node_modules/
+
+# Next.js build output
+**/.next/
+**/out/
+
+# Environment variables
+**/.env
+**/.env.*
+!**/.env.example
+
+# Logs
+*.log
 npm-debug.log*
-.next/
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test and temporary output
+coverage/
+tmp/
+temp/
+*.tmp
+*.swp
+
+# IDE
+.idea/
+.vscode/
+
+# Operating system
+.DS_Store
+Thumbs.db
