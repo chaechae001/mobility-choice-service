@@ -1,0 +1,22 @@
+@expressUrl = http://localhost:4000
+@fastapiUrl = http://localhost:8000
+
+### 1. Express 로그인 후 JWT를 임시 저장합니다.
+POST {{expressUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userId": "내_아이디",
+  "password": "내_비밀번호"
+}
+
+> {%
+  client.global.set("accessToken", response.body.token);
+%}
+
+###
+
+### 2. JWT를 FastAPI에 전달합니다.
+### FastAPI는 이 값을 다시 Express로 전달합니다.
+GET {{fastapiUrl}}/api/vehicles/preview
+Authorization: Bearer {{accessToken}}

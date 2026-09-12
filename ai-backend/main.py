@@ -1,5 +1,8 @@
 # FastAPI 클래스 가져옴
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
+from starlette import status
+
+from vehicle_client import get_vehicles
 # schemas.py에 만든 요청 형식을 가져옴
 from schemas import PreferenceRequest
 
@@ -29,19 +32,21 @@ def preview_preference(preference: PreferenceRequest):
         "preference" : preference.model_dump()
     }
 
-"""
-사용자가 JSON을 보냈다면, 
-{
-  "minBudget": 3000,
-  "maxBudget": 5000,
-  "lifestyles": ["출퇴근"]
-}
-함수 안에서는 preference가 이런 객체가 됨
-preference.minBudget      # 3000
-preference.maxBudget      # 5000
-preference.lifestyles     # ["출퇴근"]
+# FastAPI가 받은 JWT로 Express 차량 목록을 요청하는 확인용 API
+@app.get("/api/vehicles/preview")
+async def preview_vehicles(authorization: str | None = Header(default=None)):
+    # Authorization 헤더가 없다면, Express에 요청하지 않음
+    if not authorization:
+        raise HTTPException(
+            status_code=401,
+            detail= "Authorization 헤더가 필요합니다."
+        )
 
-PreferenceRequest는 일반 딕셔너리가 아니라 Pydantic이 만든 검증 기능이 있는 객체라
-model_dump()로 그 객체를 일반 Python 딕셔너리로 바꿈
-FastAPI는 Pydantic 객체를 자동으로 JSON으로 변환해줌 -> return preference라 해도 됨
-"""
+    # 실제 Express 차량 API를 호출
+    vehicles = await get_vehicles(authorization)
+
+    # 추천 전 단계이므로, 차량 개수와 원본 데이터를 그대로 반환
+    return {
+        "count": len(vehicles),
+        "vehicles": vehicles
+    }
