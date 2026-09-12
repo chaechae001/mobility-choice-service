@@ -31,3 +31,13 @@ temp/
 # Operating system
 .DS_Store
 Thumbs.db
+
+# Python
+**/.venv/
+**/venv/
+**/__pycache__/
+**/.pytest_cache/
+*.py[cod]
+
+# Local model cache
+**/model-cache/
