@@ -1,6 +1,6 @@
 # FastAPI 클래스 가져옴
 from fastapi import FastAPI, Header, HTTPException
-from starlette import status
+from ranking_service import rank_vehicles
 
 from vehicle_client import get_vehicles
 # schemas.py에 만든 요청 형식을 가져옴
@@ -50,3 +50,41 @@ async def preview_vehicles(authorization: str | None = Header(default=None)):
         "count": len(vehicles),
         "vehicles": vehicles
     }
+
+# 실제 차량 데이터와 사용자 조건을 비교해 상위 3대를 반환
+@app.post("/api/recommendations/preview")
+async def preview_recommendations(
+        preference: PreferenceRequest,
+        authorization: str | None = Header(default=None)
+):
+    # Express 차량 API는 JWT 인증이 필요
+    if not authorization:
+        raise HTTPException(
+            status_code=401,
+            detail="Authorization 헤더가 필요합니다."
+        )
+
+    # 1. Express와 MongoDB에서 실제 차량 목록을 가져옴
+    vehicles = await get_vehicles(authorization)
+
+    # 2. Pydantic 객체 -> 일반 딕셔너리로 변환
+    # ranking_service는 preference["minBudget"]처럼 딕셔너리 문법을 사용
+    preference_data = preference.model_dump()
+
+    # 3. 예산 필터와 조건별 점수를 계산해 높은 점수 순으로 정렬
+    ranked_vehicles = rank_vehicles(vehicles, preference_data)
+
+    # 4. 상위 3대만 추천 결과로 반환
+    return {
+        "totalCandidates": len(ranked_vehicles),
+        "recommendations": ranked_vehicles[:3],
+    }
+
+
+
+
+
+
+
+
+

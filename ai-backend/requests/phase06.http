@@ -1,0 +1,34 @@
+@expressUrl = http://localhost:4000
+@fastapiUrl = http://localhost:8000
+
+### 1. Express 로그인 후 JWT를 저장
+POST {{expressUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userId": "내_아이디",
+  "password": "내_비밀번호"
+}
+
+> {%
+  client.global.set("accessToken", response.bod.token);
+ %}
+
+###
+
+### 2. FastAPI 추천 API 요청
+POST {{fastapiUrl}}/api/recommendations/preview
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "minBudget": 3000,
+  "maxBudget": 5000,
+  "lifestyles": ["출퇴근", "가족 이동"],
+  "bodyTypes": ["SUV"],
+  "powertrains": ["하이브리드"],
+  "priorities": ["가격", "공간"],
+  "features": [],
+  "usageTypes": ["구매"],
+  "origins": ["국산"]
+}
