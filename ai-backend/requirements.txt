@@ -1,3 +1,8 @@
 # uv pip install -r requirements.txt
 fastapi
 uvicorn
+
+# LangChain의 기본 메시지-프롬프트 기능
+langchain-core
+# LangChain에서 ollama 모델을 호출하는 기능
+langchain-ollama
