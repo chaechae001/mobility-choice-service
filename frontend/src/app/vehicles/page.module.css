@@ -122,20 +122,6 @@
     background: rgba(255, 255, 255, 0.03);
 }
 
-.inlineEditButton {
-    flex-shrink: 0;
-    min-height: 40px;
-    padding: 0 14px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 9px;
-    color: #ffffff;
-    background: #1b2230;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 750;
-    cursor: pointer;
-}
-
 .filterPanel {
     margin: 18px 0 34px;
     padding: 30px;
@@ -347,6 +333,106 @@
     }
 }
 
+.conditionActions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 두 버튼의 크기·글자·테두리 모양은 동일하게 유지 */
+.inlineEditButton,
+.recommendButton {
+    min-height: 42px;
+    padding: 0 15px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease;
+}
+
+/* 조건 수정: 기본 어두운 버튼 */
+.inlineEditButton {
+    color: #dce2ed;
+    background: #1b2230;
+}
+
+.inlineEditButton:hover {
+    border-color: rgba(143, 168, 255, 0.5);
+    background: #252f45;
+}
+
+/* 맞춤 추천 받기: 같은 디자인, 조금 더 밝은 남색 배경 */
+.recommendButton {
+    color: #edf2ff;
+    background: #394768;
+}
+
+.recommendButton:hover:not(:disabled) {
+    border-color: rgba(143, 168, 255, 0.65);
+    background: #4a5c87;
+}
+
+.recommendButton:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.recommendationError {
+    margin: 0 0 18px;
+    padding: 15px 18px;
+    border: 1px solid rgba(255, 116, 116, 0.35);
+    border-radius: 12px;
+    color: #ffc0c0;
+    background: rgba(169, 48, 48, 0.14);
+    font-size: 14px;
+}
+
+.adviceSection {
+    margin: 0 0 24px;
+    padding: 25px;
+    border: 1px solid rgba(115, 145, 242, 0.34);
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at right top, rgba(91, 120, 223, 0.2), transparent 36%),
+        rgba(25, 30, 43, 0.9);
+}
+
+.adviceSection > p {
+    margin: 0 0 9px;
+    color: #8fa8ff;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.adviceSection h2 {
+    margin: 0 0 14px;
+    color: #ffffff;
+    font-size: 21px;
+}
+
+.adviceList {
+    margin: 0;
+    padding-left: 22px;
+    display: grid;
+    gap: 12px;
+    color: #d8deeb;
+    line-height: 1.75;
+}
+
+.adviceList li {
+    padding-left: 5px;
+}
+
+.adviceList li::marker {
+    color: #8fa8ff;
+    font-weight: 800;
+}
+
 @media (max-width: 850px) {
     .page {
         padding-right: 20px;
@@ -383,5 +469,15 @@
         right: 16px;
         bottom: 108px;
         left: 16px;
+    }
+
+    /* 모바일에서는 두 버튼을 한 줄 전체 너비로 보여준다. */
+    .conditionActions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .conditionActions button {
+        flex: 1;
     }
 }

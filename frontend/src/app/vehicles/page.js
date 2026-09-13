@@ -22,6 +22,39 @@ import {
 } from "../../components/vehicle-finder/vehicleUtils";
 import styles from "./page.module.css";
 
+// FastAPI의 ranking_service는 reasons라는 이름으로 추천 이유를 반환
+// 기존 VehicleCard는 recommendationReasons를 사용하므로 화면용 이름으로 맞춤
+// 따라서 차량 데이터를 화면에 맞는 형태로 한 번 변환
+function normalizeRecommendation(vehicle) {
+    return {
+        ...vehicle,  // vehicle 안에 있던 모든 차량 정보를 새 객체로 복사
+        recommendationReasons:  // recommendationReasons라는 새 속성을 만듬
+            // 1순위: 이미 recommendationReasons가 있다면 그대로 사용
+            // 2순위: FastAPI가 반환한 reasons가 있다면 사용
+            // 3순위: 둘 다 없다면 빈 배열
+            // recommendationsReasons가 있으면 사용, 없으면 reasons사용, 그것도 없으면 빈 배열 사용
+            vehicle.recommendationReasons ?? vehicle.reasons ?? [],
+    };
+}
+
+// Ollama 응답을 화면에 읽기 좋은 여러 줄로 나눔
+// 이전 응답에 포함된 ** 또는 1. 같은 형식도 함께 정리
+function splitAdviceLines(advice) {
+    return advice
+        // Markdown 굵게 표시 기호 제거: **문장** -> 문장
+        .replace(/\*\*/g, "")
+
+        // 줄바꿈 또는 "1. ", "2. " 앞에서 문장을 나눔
+        .split(/\n+|(?=\s*\d+\.\s)/)
+
+        // 각 문장의 앞뒤 공백과 기존 번호를 제거
+        .map((line) => line.trim().replace(/^\d+\.\s*/, ""))
+
+        // 빈 문자열은 화면에 표시하지 않음
+        .filter(Boolean);
+}
+
+
 export default function VehiclesPage() {
     const router = useRouter();
 
@@ -32,6 +65,11 @@ export default function VehiclesPage() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedVehicleIds, setSelectedVehicleIds] = useState([]);
     const [compareMessage, setCompareMessage] = useState("");
+
+    const [apiRecommendations, setApiRecommendations] = useState(null);
+    const [advice, setAdvice] = useState("");
+    const [isAdvising, setIsAdvising] = useState(false);
+    const [adviceError, setAdviceError] = useState("");
 
     useEffect(() => {
         const savedFilters = sessionStorage.getItem("vehicleFilters");
@@ -108,7 +146,9 @@ export default function VehiclesPage() {
         loadVehicles();
     }, []);
 
-    const recommendedVehicles = useMemo(() => {
+    // 기존 화면의 빠른 필터링 결과
+    // 버튼을 누르기 전에도 차량 목록과 조건 변경 결과를 바로 보여줌
+    const localRecommendedVehicles = useMemo(() => {
         return vehicles
             .filter((vehicle) => isWithinBudget(vehicle, filters))
             .map((vehicle) => ({
@@ -122,15 +162,31 @@ export default function VehiclesPage() {
             );
     }, [vehicles, filters]);
 
+    // FastAPI 추천 요청을 완료했다면 서버 결과를 우선 표시
+    // 아직 요청 전이라면, 기존 프론트엔드 필터 결과를 표시
+    // apiRecommendations: "맞춤 추천 받기" 버튼을 눌러 FastAPI가 반환한 추천 차량
+    // localRecommendedVehicles: 버튼 누르기 전, 브라우저에서 기존 필터로 계산한 차량
+    const displayedVehicles = apiRecommendations ?? localRecommendedVehicles;
+
+    // 조건이 바뀌면 이전 조건으로 만든 AI 추천 결과를 초기화함
+    // 사용자가 새 조건으로 다시 "맞춤 추천 받기"를 누르게 됨
+    useEffect(()=> {
+        setApiRecommendations(null);
+        setAdvice("");
+        setAdviceError("");
+        setSelectedVehicleIds([]);
+    }, [filters]);
+
+
     const selectedVehicles = useMemo(() => {
         return selectedVehicleIds
             .map((vehicleId) =>
-                recommendedVehicles.find(
+                displayedVehicles.find(
                     (vehicle) => getVehicleId(vehicle) === vehicleId
                 )
             )
             .filter(Boolean);
-    }, [recommendedVehicles, selectedVehicleIds]);
+    }, [displayedVehicles, selectedVehicleIds]);
 
     const selectedConditionChips = getSelectedConditionChips(
         filters,
@@ -138,7 +194,7 @@ export default function VehiclesPage() {
     );
 
     useEffect(() => {
-        const currentVehicleIds = recommendedVehicles.map((vehicle) =>
+        const currentVehicleIds = displayedVehicles.map((vehicle) =>
             getVehicleId(vehicle)
         );
 
@@ -147,7 +203,7 @@ export default function VehiclesPage() {
                 currentVehicleIds.includes(vehicleId)
             )
         );
-    }, [recommendedVehicles]);
+    }, [displayedVehicles]);
 
     function toggleOption(groupKey, option) {
         setFilters((previousFilters) => {
@@ -248,6 +304,85 @@ export default function VehiclesPage() {
         );
     }
 
+    // 버튼을 눌렀을 때만 FastAPI 추천 API와 Ollama를 호출
+    async function requestRecommendation(){
+        const token = localStorage.getItem("token");
+
+        if(!token) {
+            setAdviceError("로그인 정보가 없습니다. 다시 로그인해주세요.");
+            return;
+        }
+
+        setIsAdvising(true);
+        setAdviceError("");
+
+        try {
+            // Express(4000)가 아니라 FastAPI(8000) 주소를 사용한다.
+            const aiApiBaseUrl =
+                process.env.NEXT_PUBLIC_AI_API_BASE_URL || "http://127.0.0.1:8000";
+
+            const response = await fetch(
+                `${aiApiBaseUrl}/api/recommendations/preview`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(filters),
+                }
+            );
+
+            // 실제 요청 주소를 콘솔에서 확인
+            console.log("AI 추천 요청 주소:", aiApiBaseUrl);
+
+            // 우선 응답을 문자열로 받음
+            // JSON이 아닌 HTML 응답이 왔을 때 원인을 확인하기 쉬움
+            const responseText = await response.text();
+
+            let data;
+
+            try {
+                // 문자열이 JSON 형식일 때만 JavaScript 객체로 변환
+                data = JSON.parse(responseText);
+            } catch {
+                console.error("JSON이 아닌 응답:", responseText);
+
+                throw new Error(
+                    `FastAPI가 JSON이 아닌 화면을 반환했습니다. ` +
+                    `요청 주소: ${aiApiBaseUrl}/api/recommendations/preview`
+                );
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    data.detail || "AI 추천 결과를 불러오지 못했습니다."
+                );
+            }
+
+
+            // FastAPI의 recommendations를 기존 차량 카드가 사용할 형태로 변환
+            const nextRecommendations = Array.isArray(data.recommendations)
+                ? data.recommendations.map(normalizeRecommendation)
+                : [];
+            
+            setApiRecommendations(nextRecommendations);
+            setAdvice(data.advice || "");
+            setSelectedVehicleIds([]);
+        } catch (error) {
+            console.error("AI 추천 요청 오류:", error);
+
+            setAdviceError(
+                error instanceof Error
+                    ? error.message
+                    : "AI 추천 서버와 연결할 수 없습니다."
+            );
+        } finally {
+            // 성공, 실패와 관계없이 로딩 상태 종료
+            setIsAdvising(false);
+        }
+    }
+
     return (
         <main className={styles.page}>
             <header className={styles.header}>
@@ -273,7 +408,7 @@ export default function VehiclesPage() {
                 <h1>당신에게 맞는 차량을 확인해보세요.</h1>
 
                 <div className={styles.resultSummary}>
-                    <strong>{recommendedVehicles.length}</strong>
+                    <strong>{displayedVehicles.length}</strong>
                     <span>대의 실제 차량 정보를 비교합니다.</span>
                 </div>
             </section>
@@ -294,7 +429,7 @@ export default function VehiclesPage() {
                         )}
                     </div>
                 </div>
-
+            <div className = {styles.conditionActions}>
                 <button
                     type="button"
                     className={styles.inlineEditButton}
@@ -302,7 +437,51 @@ export default function VehiclesPage() {
                 >
                     조건 수정
                 </button>
+                
+                <button
+                    type="button"
+                    className={styles.recommendButton}
+                    onClick={requestRecommendation}
+                    disabled={isAdvising}
+                >
+                    {isAdvising ? "추천 생성 중..." : "맞춤 추천 받기"}
+                </button>
+            </div>
             </section>
+            
+            {/* 맞춤 추천 버튼을 눌렀을 때, 생성 중임을 즉시 보여줌 */}
+            {isAdvising && (
+                <section className={styles.adviceLoading} aria-live="polite">
+                    <span className={styles.adviceLoadingSpinner} />
+
+                    <div>
+                        <p>AI RECOMMENDATION</p>
+                        <strong>차량 조건을 분석하고 추천 이유를 작성하고 있어요.</strong>
+                        <span>로컬 Ollama 모델을 실행하므로 잠시 걸릴 수 있습니다.</span>
+                    </div>
+                </section>
+            )}
+
+            {/* 추천 요청 자체가 실패했을 때만 오류를 보여줌 */}
+            {adviceError && (
+                <p className={styles.recommendationError} role="alert">
+                    {adviceError}
+                </p>
+            )}
+
+            {/* 추천 설명은 조건 요약과 조건 편집 사이에 표시 */}
+            {advice && (
+                <section className={styles.adviceSection}>
+                    <p>AI ADVICE</p>
+                    <h2>현재 조건을 기준으로 추천해요.</h2>
+
+                    <ol className={styles.adviceList}>
+                        {splitAdviceLines(advice).map((line, index) => (
+                            <li key={`${line}-${index}`}>{line}</li>
+                        ))}
+                    </ol>
+                </section>
+            )}
 
             {isFilterOpen && (
                 <section className={styles.filterPanel}>
@@ -340,12 +519,13 @@ export default function VehiclesPage() {
 
             {message && <p className={styles.notice}>{message}</p>}
 
+
             <VehicleComparison
                 selectedVehicles={selectedVehicles}
                 onClear={() => setSelectedVehicleIds([])}
             />
 
-            {recommendedVehicles.length === 0 ? (
+            {displayedVehicles.length === 0 ? (
                 <section className={styles.emptyResult}>
                     <p>선택한 예산 범위에 맞는 차량이 없습니다.</p>
                     <button
@@ -357,7 +537,7 @@ export default function VehiclesPage() {
                 </section>
             ) : (
                 <section className={resultsStyles.vehicleGrid}>
-                    {recommendedVehicles.map((vehicle, index) => (
+                    {displayedVehicles.map((vehicle, index) => (
                         <VehicleCard
                             key={getVehicleId(vehicle)}
                             vehicle={vehicle}
