@@ -1,7 +1,8 @@
-@expressUrl = http://localhost:4000
-@fastapiUrl = http://localhost:8000
+@expressUrl = http://127.0.0.1:4000
+@fastapiUrl = http://127.0.0.1:8000
 
 ### 1. Express 로그인 후 JWT를 저장
+# @name login
 POST {{expressUrl}}/api/auth/login
 Content-Type: application/json
 
@@ -10,15 +11,11 @@ Content-Type: application/json
   "password": "내_비밀번호"
 }
 
-> {%
-  client.global.set("accessToken", response.bod.token);
- %}
-
 ###
 
 ### 2. FastAPI 추천 API 요청
-POST {{fastapiUrl}}/api/recommendations/preview
-Authorization: Bearer {{accessToken}}
+PPOST {{fastapiUrl}}/api/recommendations
+Authorization: Bearer {{login.response.body.$.token}}
 Content-Type: application/json
 
 {
