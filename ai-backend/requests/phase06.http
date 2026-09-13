@@ -7,14 +7,14 @@ POST {{expressUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "userId": "내_아이디",
-  "password": "내_비밀번호"
+  "userId": "demo_user",
+  "password": "demo_password_123"
 }
 
 ###
 
 ### 2. FastAPI 추천 API 요청
-PPOST {{fastapiUrl}}/api/recommendations
+POST {{fastapiUrl}}/api/recommendations/preview
 Authorization: Bearer {{login.response.body.$.token}}
 Content-Type: application/json
 

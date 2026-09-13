@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:4000
+@baseUrl = http://127.0.0.1:4000
 @userId = demo_user
 @password = demo_password_123
 
@@ -15,6 +15,7 @@ Content-Type: application/json
 }
 
 ### 로그인
+# @name login
 POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
@@ -23,18 +24,16 @@ Content-Type: application/json
   "password": "{{password}}"
 }
 
-> {%
-    client.global.set("token", response.body.token);
-%}
+###
 
 ### 로그인 사용자 확인
 GET {{baseUrl}}/api/auth/me
-Authorization: Bearer {{token}}
+Authorization: Bearer {{login.response.body.$.token}}
 
 ### 차량 목록 조회
 GET {{baseUrl}}/api/vehicles
-Authorization: Bearer {{token}}
+Authorization: Bearer {{login.response.body.$.token}}
 
 ### 차량 상세 조회
 GET {{baseUrl}}/api/vehicles/mercedes-e200-exclusive
-Authorization: Bearer {{token}}
+Authorization: Bearer {{login.response.body.$.token}}
