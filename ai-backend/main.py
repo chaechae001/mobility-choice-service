@@ -5,6 +5,8 @@ from ranking_service import rank_vehicles
 from vehicle_client import get_vehicles
 # schemas.py에 만든 요청 형식을 가져옴
 from schemas import PreferenceRequest
+from advisor_service import create_advice
+from starlette.concurrency import run_in_threadpool
 
 # FastAPI 서버 애플리케이션 생성
 # title : Swagger문서 화면에 표시됨
@@ -72,19 +74,33 @@ async def preview_recommendations(
     preference_data = preference.model_dump()
 
     # 3. 예산 필터와 조건별 점수를 계산해 높은 점수 순으로 정렬
-    ranked_vehicles = rank_vehicles(vehicles, preference_data)
+    ranked_vehicles = rank_vehicles(
+        vehicles, 
+        preference_data
+    )
 
     # 4. 상위 3대만 추천 결과로 반환
+    recommendations = ranked_vehicles[:3]
+    # 조건에 맞는 차량이 없으면 모델 호출 없이 안내 메시지를 반환
+    if not recommendations:
+        return {
+            "totalCandidates": 0,
+            "recommendations": [],
+            "advice": "현재 조건에 맞는 차량을 찾지 못했습니다. 예산, 차종 또는 동력원을 조금 넓혀 다시 선택해 주세요.",
+        }
+
+    # 5. 동기 invoke() 호출을 별도 스레드에서 실행
+    # 모델이 답변을 만드는 동안 FastAPI 이벤트 루프가 오래 막히지 않음
+    advice = await run_in_threadpool(
+        create_advice,
+        preference_data,
+        recommendations,
+    )
+
+    # 6. 규칙 기반 결과와 설명을 함께 반환
     return {
         "totalCandidates": len(ranked_vehicles),
-        "recommendations": ranked_vehicles[:3],
+        "recommendations": recommendations,
+        "advice": advice,
     }
-
-
-
-
-
-
-
-
 

@@ -1,0 +1,31 @@
+@expressUrl = http://127.0.0.1:4000
+@fastapiUrl = http://127.0.0.1:8000
+
+### 1. Express 로그인
+# @name login
+POST {{expressUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userId": "demo_user",
+  "password": "demo_password_123"
+}
+
+###
+
+### 2. 규칙 기반 추천 결과 + Ollama 설명 생성
+POST {{fastapiUrl}}/api/recommendations/preview
+Authorization: Bearer {{login.response.body.$.token}}
+Content-Type: application/json
+
+{
+  "minBudget": 3000,
+  "maxBudget": 5000,
+  "lifestyles": ["출퇴근", "가족 이동"],
+  "bodyTypes": ["SUV"],
+  "powertrains": ["하이브리드"],
+  "priorities": ["가격", "공간"],
+  "features": [],
+  "usageTypes": ["구매"],
+  "origins": ["국산"]
+}
