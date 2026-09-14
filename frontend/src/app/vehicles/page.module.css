@@ -392,7 +392,7 @@
 }
 
 .adviceSection {
-    margin: 0 0 24px;
+    margin: 16px 0 24px;
     padding: 25px;
     border: 1px solid rgba(115, 145, 242, 0.34);
     border-radius: 18px;
@@ -431,6 +431,25 @@
 .adviceList li::marker {
     color: #8fa8ff;
     font-weight: 800;
+}
+
+.adviceLoading {
+    margin-top: 16px;
+    padding: 20px 24px;
+    border: 1px solid #40568f;
+    border-radius: 16px;
+    background: #18223e;
+    color: #f7f9ff;
+}
+
+.adviceLoading h3 {
+    margin: 0 0 10px;
+    color: #85a8ff;
+}
+
+.adviceLoading p {
+    margin: 6px 0;
+    color: #d7e0f7;
 }
 
 @media (max-width: 850px) {

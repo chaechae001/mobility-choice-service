@@ -54,6 +54,26 @@ function splitAdviceLines(advice) {
         .filter(Boolean);
 }
 
+// FastAPI가 보낸 SSE 문자열 한 덩어리를 JavaScript 객체로 바꿈
+function parseSseEvent(rawEvent) {
+    const lines = rawEvent.split("\n");
+
+    const eventLine = lines.find((line)=> line.startsWith("event:"));
+    const dataLine = lines.find((data)=> data.startsWith("data:"));
+
+    // 형식이 불완전한 조각은 무시
+    if (!eventLine || !dataLine) {
+        return null;
+    }
+
+    return {
+        // "event : advice" -> "advice"
+        eventName: eventLine.replace("event:", "").trim(),
+
+        // "data: {...}" -> JavaScript 객체
+        data: JSON.parse(dataLine.replace("data:", "").trim()),
+    };
+}
 
 export default function VehiclesPage() {
     const router = useRouter();
@@ -193,6 +213,12 @@ export default function VehiclesPage() {
         FILTER_GROUPS
     );
 
+    // 예산은 LLM이 아니라 현재 필터 값으로 직접 표시
+    // 따라서 모델이 숫자를 잘못 요약해도 화면의 조건 정보는 정확
+    const budgetChip =
+        `예산 ${Number(filters.minBudget).toLocaleString("ko-KR")}만원` +
+        ` ~ ${Number(filters.maxBudget).toLocaleString("ko-KR")}만원`;
+
     useEffect(() => {
         const currentVehicleIds = displayedVehicles.map((vehicle) =>
             getVehicleId(vehicle)
@@ -313,16 +339,21 @@ export default function VehiclesPage() {
             return;
         }
 
+        // 새 요청을 시작하므로 이전 설명, 오류를 초기화함
         setIsAdvising(true);
+        setAdvice("");
         setAdviceError("");
+        setApiRecommendations(null);
+        setSelectedVehicleIds([]);
 
         try {
             // Express(4000)가 아니라 FastAPI(8000) 주소를 사용한다.
             const aiApiBaseUrl =
                 process.env.NEXT_PUBLIC_AI_API_BASE_URL || "http://127.0.0.1:8000";
 
+            // 완성된 JSON 대신 스트리밍 API 호출
             const response = await fetch(
-                `${aiApiBaseUrl}/api/recommendations/preview`,
+                `${aiApiBaseUrl}/api/recommendations/stream`,
                 {
                     method: "POST",
                     headers: {
@@ -336,41 +367,87 @@ export default function VehiclesPage() {
             // 실제 요청 주소를 콘솔에서 확인
             console.log("AI 추천 요청 주소:", aiApiBaseUrl);
 
-            // 우선 응답을 문자열로 받음
-            // JSON이 아닌 HTML 응답이 왔을 때 원인을 확인하기 쉬움
-            const responseText = await response.text();
-
-            let data;
-
-            try {
-                // 문자열이 JSON 형식일 때만 JavaScript 객체로 변환
-                data = JSON.parse(responseText);
-            } catch {
-                console.error("JSON이 아닌 응답:", responseText);
-
-                throw new Error(
-                    `FastAPI가 JSON이 아닌 화면을 반환했습니다. ` +
-                    `요청 주소: ${aiApiBaseUrl}/api/recommendations/preview`
-                );
-            }
-
+            // 인증 오류 등 스트리밍 시작 전의 HTTP 오류 처리
             if (!response.ok) {
-                throw new Error(
-                    data.detail || "AI 추천 결과를 불러오지 못했습니다."
-                );
+                const errorText = await response.text();
+
+                try {
+                    const errorData = JSON.parse(errorText);
+                    throw new Error(
+                        errorData.detail || "AI 추천 요청을 시작하지 못했습니다."
+                    );
+                } catch (error) {
+                    if (error instanceof SyntaxError) {
+                        throw new Error(
+                            "AI 추천 서버가 올바른 응답을 반환하지 않았습니다."
+                        );
+                    }
+                    throw error;
+                }
             }
 
+            // 브라우저가 스트림을 읽을 수 없는 경우의 방어코드
+            if (!response.body) {
+                throw new Error("스트리밍 응답을 읽을 수 없습니다.");
+            }
 
-            // FastAPI의 recommendations를 기존 차량 카드가 사용할 형태로 변환
-            const nextRecommendations = Array.isArray(data.recommendations)
-                ? data.recommendations.map(normalizeRecommendation)
-                : [];
-            
-            setApiRecommendations(nextRecommendations);
-            setAdvice(data.advice || "");
-            setSelectedVehicleIds([]);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            // 네트워크 조각이 중간에 끊겨 들어올 수 있으므로 남은 문자열을 보관
+            let buffer = "";
+
+            while (true) {
+                const {done, value} = await reader.read();
+
+                if (done) {
+                    break;
+                }
+
+                // Uint8Array 형태의 네트워크 데이터를 문자열로 변환
+                buffer += decoder.decode(value, {stream: true});
+                
+                // SSE 이벤트는 빈 줄 (\n\n)로 구분
+                const rawEvents = buffer.split("\n\n");
+
+                // 마지막 조각은 아직 완성되지 않았을 수 있으므로 다음 반복까지 보관
+                buffer = rawEvents.pop();
+
+                rawEvents.forEach((rawEvent) => {
+                    const parsedEvent = parseSseEvent(rawEvent);
+
+                    if (!parsedEvent) {
+                        return;
+                    }
+
+                    const { eventName, data } = parsedEvent;
+
+                    // 추천 차량을 먼저 받으면 즉시 카드에 표시한다.
+                    if (eventName === "recommendations") {
+                        const nextRecommendations =
+                            data.recommendations.map(normalizeRecommendation);
+
+                        setApiRecommendations(nextRecommendations);
+                    }
+
+                    // Ollama 텍스트 조각을 기존 advice 뒤에 계속 붙인다.
+                    if (eventName === "advice") {
+                        setAdvice((previousAdvice) =>
+                            previousAdvice + data.text
+                        );
+                    }
+
+                    // 서버가 스트리밍 중 오류를 보낸 경우
+                    if (eventName === "error") {
+                        throw new Error(
+                            data.detail ||
+                            "추천 설명을 생성하는 중 오류가 발생했습니다."
+                        );
+                    }
+                });
+            }
         } catch (error) {
-            console.error("AI 추천 요청 오류:", error);
+            console.error("AI 추천 스트리밍 오류:", error);
 
             setAdviceError(
                 error instanceof Error
@@ -378,7 +455,7 @@ export default function VehiclesPage() {
                     : "AI 추천 서버와 연결할 수 없습니다."
             );
         } finally {
-            // 성공, 실패와 관계없이 로딩 상태 종료
+            // 스트림이 끝나거나 오류가 나면 로딩 상태를 종료한다.
             setIsAdvising(false);
         }
     }
@@ -418,15 +495,13 @@ export default function VehiclesPage() {
                     <p>현재 선택 조건</p>
 
                     <div className={styles.conditionChips}>
-                        {selectedConditionChips.length > 0 ? (
-                            selectedConditionChips.map((chip) => (
-                                <span key={chip}>{chip}</span>
-                            ))
-                        ) : (
-                            <span className={styles.emptyChip}>
-                                전체 조건으로 차량을 보고 있어요.
-                            </span>
-                        )}
+                        {/* 코드가 계산한 정확한 예산 범위 */}
+                        <span>{budgetChip}</span>
+
+                        {/* 사용자가 선택한 생활 조건, 차종, 동력원 등 */}
+                        {selectedConditionChips.map((chip) => (
+                            <span key={chip}>{chip}</span>
+                        ))}
                     </div>
                 </div>
             <div className = {styles.conditionActions}>
@@ -452,12 +527,13 @@ export default function VehiclesPage() {
             {/* 맞춤 추천 버튼을 눌렀을 때, 생성 중임을 즉시 보여줌 */}
             {isAdvising && (
                 <section className={styles.adviceLoading} aria-live="polite">
-                    <span className={styles.adviceLoadingSpinner} />
+                    <span className={styles.adviceLoadingSpinner} aria-hidden="true" />
 
                     <div>
-                        <p>AI RECOMMENDATION</p>
-                        <strong>차량 조건을 분석하고 추천 이유를 작성하고 있어요.</strong>
-                        <span>로컬 Ollama 모델을 실행하므로 잠시 걸릴 수 있습니다.</span>
+                        <h3>🚗 AI Recommendation</h3>
+                        <p>차량 조건을 분석하고 추천 이유를 작성하고 있어요.</p>
+                        <p>로컬 Ollama 모델을 실행하므로 잠시 걸릴 수 있습니다.</p>
+                        <p></p>
                     </div>
                 </section>
             )}
@@ -475,11 +551,11 @@ export default function VehiclesPage() {
                     <p>AI ADVICE</p>
                     <h2>현재 조건을 기준으로 추천해요.</h2>
 
-                    <ol className={styles.adviceList}>
+                    <ul className={styles.adviceList}>
                         {splitAdviceLines(advice).map((line, index) => (
                             <li key={`${line}-${index}`}>{line}</li>
                         ))}
-                    </ol>
+                    </ul>
                 </section>
             )}
 

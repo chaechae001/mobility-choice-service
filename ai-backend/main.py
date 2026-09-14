@@ -5,10 +5,12 @@ from ranking_service import rank_vehicles
 from vehicle_client import get_vehicles
 # schemas.py에 만든 요청 형식을 가져옴
 from schemas import PreferenceRequest
-from advisor_service import create_advice
+from advisor_service import create_advice, stream_advice
 from starlette.concurrency import run_in_threadpool
 
 from fastapi.middleware.cors import CORSMiddleware
+import json
+from fastapi.responses import StreamingResponse
 
 # FastAPI 서버 애플리케이션 생성
 # title : Swagger문서 화면에 표시됨
@@ -100,7 +102,8 @@ async def preview_recommendations(
         return {
             "totalCandidates": 0,
             "recommendations": [],
-            "advice": "현재 조건에 맞는 차량을 찾지 못했습니다. 예산, 차종 또는 동력원을 조금 넓혀 다시 선택해 주세요.",
+            "advice": "선택한 필수 조건을 모두 만족하는 차량이 현재 데이터에 없습니다. "
+                    "차종, 동력 방식, 국산·수입 또는 필수 기능 조건을 하나씩 완화해 다시 선택해 주세요.",
         }
 
     # 5. 동기 invoke() 호출을 별도 스레드에서 실행
@@ -118,3 +121,97 @@ async def preview_recommendations(
         "advice": advice,
     }
 
+# 서버에서 브라우저로 보내는 SSE 형식 문자열 만듬
+# event: 이벤트 이름, data: JSON 데이터
+def create_sse_message(event_name, data):
+    return (
+        f"event: {event_name}\n"
+        f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
+    )
+
+# Phase 09:
+# 추천 차량은 먼저 보내고, Ollama 설명은 생성되는 대로 조각 단위로 보냄
+@app.post("/api/recommendations/stream")
+async def stream_recommendations(
+    preference: PreferenceRequest,
+    authorization: str | None = Header(default=None)
+):
+    # 스트리밍을 시작하기 전에 JWT 존재 여부를 먼저 검사
+    if not authorization:
+        raise HTTPException(
+            status_code=401,
+            detail= "Authorization 헤더가 필요합니다."
+        )
+
+    async def event_generator():
+        try:
+            # 1. Express에서 JWT 인증 차량 데이터를 가져옴
+            vehicles= await get_vehicles(authorization)
+
+            # 2. Pydantic 객체 -> 일반 딕셔너리로 바꿈
+            preference_data = preference.model_dump()
+
+            # 3. 규칙 기반 추천 점수를 계산
+            ranked_vehicles = rank_vehicles(vehicles, preference_data)
+            recommendations = ranked_vehicles[:3]
+
+            # 4. 차량 추천 결과를 먼저 브라우저로 보냄
+            # 사용자는 Ollama 설명을 기다리는 동안 추천 차량 카드를 먼저 볼 수 있음
+            yield create_sse_message(
+                "recommendations",
+                {
+                    "totalCandidates": len(ranked_vehicles),
+                    "recommendations": recommendations
+                }
+            )
+
+            # 추천 차량이 없으면 Ollama 호출 없이 종료
+            if not recommendations:
+                yield create_sse_message(
+                    "advice",
+                    {
+                        "text": (
+                            "선택한 필수 조건을 모두 만족하는 차량이 현재 데이터에 없습니다. "
+                            "차종, 동력 방식, 국산·수입 또는 필수 기능 조건을 하나씩 완화해 다시 선택해 주세요."
+                        )
+                    }
+                )
+                yield create_sse_message("done", {})
+                return 
+
+            # 5. Ollama가 생성하는 텍스트 조각을 바로바로 브라우저로 전달
+            async for chunk in stream_advice(
+                preference_data,
+                recommendations
+            ):
+                yield create_sse_message(
+                    "advice",
+                    {"text": chunk}
+                )
+
+            # 6. 모든 생성이 끝났다는 이벤트를 보냄
+            yield create_sse_message("done", {})
+
+        except Exception as error:
+            # 스트리밍 도중 발생한 오류는 이벤트로 브라우저에 전달
+            print("추천 스트리밍 오류:", error)
+
+            yield create_sse_message(
+                "error",
+                {
+                    "detail": (
+                        "추천 설명을 생성하는 중 오류가 발생했습니다."
+                        "Ollama 서버 상태를 확인해주세요."
+                    )
+                }
+            )
+
+    # text/event-stream: 서버가 응답을 한 번에 끝내지 않고 계속 전송하는 방식
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Contrl": "no-cache",
+            "X-Accel-Buffering": "no",
+        }
+    )
